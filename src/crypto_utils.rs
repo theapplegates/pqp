@@ -28,8 +28,8 @@ pub struct QuantumCrypto {
 
 impl QuantumCrypto {
     pub fn new() -> Result<Self, Box<dyn Error>> {
-        let sig = sig::Sig::new(sig::Algorithm::Dilithium3)?;
-        let kem = kem::Kem::new(kem::Algorithm::Kyber512)?;
+        let sig = sig::Sig::new(sig::Algorithm::Dilithium5)?;
+        let kem = kem::Kem::new(kem::Algorithm::Kyber1024)?;
 
         Ok(Self {
             sig,
