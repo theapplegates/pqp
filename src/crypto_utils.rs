@@ -10,7 +10,7 @@ use rand_core::{OsRng, RngCore};
 use std::fs;
 use std::error::Error;
 use hkdf::Hkdf;
-use sha2::Sha256;
+use sha2::Sha512;
 use argon2::Argon2;
 use hmac::{Hmac, Mac};
 use std::io::Write; // Import Write trait for write_all
@@ -99,7 +99,7 @@ impl QuantumCrypto {
         let (ciphertext_kem, shared_secret) = self.kem.encapsulate(&recipient_pk)?;
 
         // Derive AES key using HKDF
-        let hk = Hkdf::<Sha256>::new(None, shared_secret.as_ref());
+        let hk = Hkdf::<Sha512>::new(None, shared_secret.as_ref());
         let mut aes_key = [0u8; 32]; // 256 bits for AES-256
         hk.expand(b"AES key", &mut aes_key)
             .map_err(|_| "HKDF expansion failed")?;
@@ -115,7 +115,7 @@ impl QuantumCrypto {
             .map_err(|_| "Encryption failed.")?;
 
         // Generate MAC
-        let mut mac = <Hmac::<Sha256> as Mac>::new_from_slice(&aes_key)
+        let mut mac = <Hmac::<Sha512> as Mac>::new_from_slice(&aes_key)
             .map_err(|_| "Failed to create HMAC")?;
         mac.update(ciphertext_kem.as_ref());
         mac.update(&ciphertext);
@@ -151,13 +151,13 @@ impl QuantumCrypto {
         let shared_secret = self.kem.decapsulate(sk, &ciphertext_kem)?;
 
         // Derive AES key using HKDF
-        let hk = Hkdf::<Sha256>::new(None, shared_secret.as_ref());
+        let hk = Hkdf::<Sha512>::new(None, shared_secret.as_ref());
         let mut aes_key = [0u8; 32];
         hk.expand(b"AES key", &mut aes_key)
             .map_err(|_| "HKDF expansion failed")?;
 
         // Verify MAC
-        let mut mac = <Hmac::<Sha256> as Mac>::new_from_slice(&aes_key)
+        let mut mac = <Hmac::<Sha512> as Mac>::new_from_slice(&aes_key)
             .map_err(|_| "Failed to create HMAC")?;
         mac.update(&encrypted_data.ciphertext_kem);
         mac.update(&encrypted_data.ciphertext);
